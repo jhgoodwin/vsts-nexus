@@ -172,6 +172,8 @@ ClientBin/
 *.dbproj.schemaview
 *.pfx
 *.publishsettings
+/.vs
+*.vsix
 
 # RIA/Silverlight projects
 Generated_Code/
@@ -201,4 +203,3 @@ GeneratedArtifacts/
 _Pvt_Extensions/
 ModelManifest.xml
 /Package
-/.vs
