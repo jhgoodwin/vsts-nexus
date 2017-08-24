@@ -1,5 +1,5 @@
 {
-  "id": "f5ac18e5-ebe2-44f5-b3f3-def849ba8144",
+  "id": "63c05782-fd11-4589-952b-88076b72c4de",
   "name": "nexusArtifactUpload",
   "friendlyName": "ms-resource:loc.friendlyName",
   "description": "ms-resource:loc.description",
@@ -9,12 +9,12 @@
     "Build",
     "Release"
   ],
-  "author": "Microsoft",
+  "author": "johngoodwinmetabolon",
   "demands": [],
   "version": {
     "Major": 0,
     "Minor": 1,
-    "Patch": 5
+    "Patch": 14
   },
   "instanceNameFormat": "ms-resource:loc.instanceNameFormat",
   "inputs": [
@@ -43,36 +43,31 @@
       "helpMarkDown": "ms-resource:loc.input.help.groupId"
     },
     {
-      "name": "artifactId",
-      "type": "string",
-      "label": "ms-resource:loc.input.label.artifactId",
-      "defaultValue": "",
+      "name": "packageType",
+      "type": "pickList",
+      "label": "ms-resource:loc.input.label.packageType",
       "required": true,
-      "helpMarkDown": "ms-resource:loc.input.help.artifactId"
+      "helpMarkDown": "ms-resource:loc.input.help.packageType",
+      "defaultValue": "NuGet",
+      "options": {
+        "NuGet": "NuGet"
+      }
     },
     {
-      "name": "artifactVersion",
+      "name": "serviceUrlFragment",
       "type": "string",
-      "label": "ms-resource:loc.input.label.artifactVersion",
-      "defaultValue": "",
+      "label": "ms-resource:loc.input.label.serviceUrlFragment",
+      "defaultValue": "service/local/nuget/nuget-metabolon/",
       "required": true,
-      "helpMarkDown": "ms-resource:loc.input.help.artifactVersion"
+      "helpMarkDown": "ms-resource:loc.input.help.serviceUrlFragment"
     },
     {
-      "name": "packaging",
+      "name": "basePath",
       "type": "string",
-      "label": "ms-resource:loc.input.label.packaging",
-      "defaultValue": "",
+      "label": "ms-resource:loc.input.label.basePath",
+      "defaultValue": "$(build.artifactstagingdirectory)",
       "required": true,
-      "helpMarkDown": "ms-resource:loc.input.help.packaging"
-    },
-    {
-      "name": "fileName",
-      "type": "filePath",
-      "label": "ms-resource:loc.input.label.fileName",
-      "defaultValue": "",
-      "required": true,
-      "helpMarkDown": "ms-resource:loc.input.help.fileName"
+      "helpMarkDown": "ms-resource:loc.input.help.basePath"
     },
     {
       "name": "classifier",
@@ -81,14 +76,6 @@
       "defaultValue": "",
       "required": false,
       "helpMarkDown": "ms-resource:loc.input.help.classifier"
-    },
-    {
-      "name": "extension",
-      "type": "string",
-      "label": "ms-resource:loc.input.label.extension",
-      "defaultValue": "",
-      "required": false,
-      "helpMarkDown": "ms-resource:loc.input.help.extension"
     },
     {
       "name": "trustSSL",

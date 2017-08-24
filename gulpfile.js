@@ -14,6 +14,8 @@ var exec = require('child_process').exec;
 var tsc = require('gulp-tsc');
 var mocha = require('gulp-mocha');
 var cp = require('child_process');
+var gulpExec = require('gulp-exec');
+var fse = require('fs-extra');
 
 var NPM_MIN_VER = '3.0.0';
 var MIN_NODE_VER = '4.0.0';
@@ -46,27 +48,26 @@ gulp.task('clean', function (cb) {
 });
 
 // compile tasks inline
-gulp.task('compileTasks', ['clean'], function (cb) {
-    try {
-        getNpmExternal('vsts-task-lib');
-        getNpmExternal('request');
-    }
-    catch (err) {
-        console.log('error:' + err.message);
-        cb(new gutil.PluginError('compileTasks', err.message));
-        return;
-    }
+gulp.task('compileTasks', ['compileTypeScript']);
 
+gulp.task('compileTypeScript', function (cb) {
     var tasksPath = path.join(__dirname, 'Extension', '**/*.ts');
     return gulp.src([tasksPath, 'definitions/*.d.ts'])
         .pipe(tsc())
         .pipe(gulp.dest(path.join(__dirname, 'Extension')));
 });
 
+gulp.task('test', ['compileTypeScript'], function(cb) {
+    var tasksPath = path.join(__dirname, 'Extension', '**/test.js');
+	return gulp.src([tasksPath])
+		.pipe(gulpExec('nodejs <%= file.path %>'))
+		.pipe(gulpExec.reporter());
+});
+
 gulp.task('copyMdFiles', function(cb) {
     return gulp.src(path.join(__dirname, '*.md'))
     .pipe(gulp.dest(path.join(__dirname)));
-})
+});
 
 gulp.task('compile', ['compileTasks', 'copyMdFiles']);
 
@@ -82,7 +83,9 @@ gulp.task('build', ['locCommon'], function () {
         .pipe(pkgm.PackageTask(_buildRoot, [], []));
 });
 
-gulp.task('package', ['build'], function() {
+gulp.task('package', ['build'], function(cb) {
+	validateTaskDependencies(cb);
+	copyPackageNodeModules(cb);
     var _manifestDir = path.join(__dirname, 'Extension');
     shell.cp('-R', path.join(_manifestDir, 'extension-icon.png'), _buildRoot);
     shell.cp('-R', path.join(_manifestDir, 'extension-manifest.json'), _buildRoot);
@@ -97,6 +100,48 @@ gulp.task('default', ['package']);
 //-----------------------------------------------------------------------------------------------------------------
 // INTERNAL BELOW
 //-----------------------------------------------------------------------------------------------------------------
+
+var validateTaskDependencies = function (cb) {
+    try {
+        getNpmExternal('vsts-task-lib');
+        getNpmExternal('request');
+        getNpmExternal('cheerio');
+    }
+    catch (err) {
+        console.log('error:' + err.message);
+        cb(new gutil.PluginError('validateTaskDependencies', err.message));
+        return;
+    }
+}
+
+var copyPackageNodeModules = function (cb) {
+    try {
+		var targetNodeModulesPaths = getFolders(_buildRoot)
+			.filter(f => {
+					return path.basename(f) == 'node_modules'
+						&& !(path.dirname(f).indexOf('node_modules') > -1)
+			});
+		if (!targetNodeModulesPaths.length) {
+			throw new Exception("Unable to find node_modules within the build folder/subfolders: " + _build);
+		}
+		var targetNodeModulesPath = targetNodeModulesPaths[0];
+		var nodeModules = getFolders(_tempPath)
+			.filter(f => {
+				return path.basename(f) == 'node_modules'
+					&& !(path.dirname(f).indexOf('node_modules') > -1)
+			});
+		nodeModules.forEach(modulePath => {
+			console.log('copying recursive : ' + modulePath + ' to ' + targetNodeModulesPath);
+			fse.copySync(modulePath, targetNodeModulesPath, { dereference: true });
+		});
+    }
+    catch (err) {
+        console.log('error:' + err.message);
+        cb(new gutil.PluginError('copyPackageNodeModules', err.message));
+        return;
+    }
+	
+}
 
 var getNpmExternal = function (name) {
     var externals = require('./externals.json');
@@ -129,7 +174,7 @@ var getNpmExternal = function (name) {
 
     shell.pushd(libPath);
     var completedPath = path.join(libPath, 'installcompleted');
-    if (shell.test('-f', completedPath)) {
+    if (fs.existsSync(completedPath)) {
         console.log('Package already installed. Skipping.');
         shell.popd();
         return;
@@ -160,3 +205,23 @@ var getNpmExternal = function (name) {
 
     fs.writeFileSync(completedPath, '');
 }
+
+/*
+	Similar to gulp.src, but was easier for me to figure out than how to pipe a filter
+	In the usage, I get any node_modules subfolder which is not itself a node_modules subfolder
+*/
+var getFolders = function(rootdir) {
+	var results = [];
+
+	var files = fs.readdirSync(rootdir);
+	var getSubFolders = function (filesOrFolders) {
+		return filesOrFolders.filter(file => {
+			var filepath = path.join(rootdir, file);
+			var stat = fs.statSync(filepath);
+			return stat.isDirectory();
+		}).map(file => path.join(rootdir, file));
+	}
+	results = getSubFolders(files);
+	results.map(getFolders).forEach(subFolders => results = results.concat(subFolders));
+	return results;
+};

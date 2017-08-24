@@ -1,0 +1,95 @@
+{
+    "id": "63c05782-fd11-4589-952b-88076b72c4de",
+    "name": "nexusArtifactUpload",
+    "friendlyName": "Nexus Artifact Upload - Metabolon",
+    "description": "Upload artifacts to Sonatype Nexus",
+    "helpMarkDown": "Upload artifacts to [Sonatype Nexus](http://www.sonatype.org/nexus/)",
+    "category": "Deploy",
+    "visibility": [
+        "Build",
+        "Release"
+    ],
+    "author": "johngoodwinmetabolon",
+    "demands": [],
+    "version": {
+        "Major": 0,
+        "Minor": 1,
+        "Patch": 14
+    },
+    "instanceNameFormat": "Nexus Artifact Upload - Metabolon",
+	"inputs": [
+		{
+			"name": "serverEndpoint",
+			"type": "connectedService:Generic",
+			"label": "Sonatype Nexus service endpoint",
+			"defaultValue": "",
+			"required": true,
+			"helpMarkDown": "Select the service endpoint for your Nexus instance.  To create one, click the Manage link and create a new Generic Service Endpoint, enter the Nexus server URL for the server URL, e.g. http://nexusserver.example.com:8080, and required credentials."
+		},
+		{
+			"name": "repositoryId",
+			"type": "string",
+			"label": "Repository Id",
+			"defaultValue": "",
+			"required": true,
+			"helpMarkDown": "The Nexus Repository Id"
+		},
+		{
+			"name": "groupId",
+			"type": "string",
+			"label": "Group Id",
+			"defaultValue": "",
+			"required": true,
+			"helpMarkDown": "The Nexus Group Id.  Only letters, numbers, underscore(_), hyphon(-), and dot(.) are allowed."
+		},
+		{
+            "name": "packageType",
+            "type": "pickList",
+            "label": "Type",
+            "required": true,
+            "helpMarkDown": "Type of package to upload.",
+            "defaultValue": "NuGet",
+            "options": {
+                "NuGet": "NuGet"
+            }
+        },
+		{
+			"name": "serviceUrlFragment",
+			"type": "string",
+			"label": "Service Url Fragment",
+			"defaultValue": "service/local/nuget/nuget-metabolon/",
+			"required": true,
+			"helpMarkDown": "The path to use after the service base URL"
+		},
+		{
+			"name": "basePath",
+			"type": "string",
+			"label": "Base Path",
+			"defaultValue": "$(build.artifactstagingdirectory)",
+			"required": true,
+			"helpMarkDown": "The base path to search for the nuget packages. Build variables are allowed to be in this field."
+		},
+		{
+			"name": "classifier",
+			"type": "string",
+			"label": "Classifier",
+			"defaultValue": "",
+			"required": false,
+			"helpMarkDown": "The Nexus Classifier of the file to upload. If empty, no classifier will be appended to the file."
+		},
+		{
+			"name": "trustSSL",
+			"type": "boolean",
+			"label": "Trust Server Certificate",
+			"defaultValue": "false",
+			"required": false,
+			"helpMarkDown": "Selecting this option results in the Nexus Server's SSL certificate being trusted even if it is self-signed or cannot be validated by a Certificate Authority (CA)."
+		}
+	],
+    "execution": {
+        "Node": {
+            "target": "NexusTask.js",
+            "argumentFormat": ""
+        }
+    }
+}

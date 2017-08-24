@@ -1,11 +1,11 @@
 {
     "manifestVersion": 1,
-    "id": "nexus-build-extension",
-    "name": "Integrate with Sonatype Nexus",
-    "version": "0.114.0",
-    "publisher": "ms-vsts",
+    "id": "nexus-build-extension-metabolon",
+    "name": "Integrate with Sonatype Nexus - Metabolon",
+    "version": "0.114.14",
+    "publisher": "johngoodwinmetabolon",
     "description": "Upload TFS/Team Services artifacts to Sonatype Nexus",
-    "public": true,
+    "public": false,
     "categories": [
         "Build and release"
     ],
